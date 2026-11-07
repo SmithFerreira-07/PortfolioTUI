@@ -1,0 +1,43 @@
+{
+  "profile": {
+    "name": "Sora Takahashi",
+    "role": "Creative Technologist & Shader Artist",
+    "bio": "Exploring the intersection of real-time graphics, generative audio-visual instruments, and expressive terminal interfaces."
+  },
+  "skills": [
+    "TypeScript",
+    "WebGPU",
+    "GLSL / WGSL",
+    "Three.js",
+    "Rust / Wasm",
+    "WebAudio DSP",
+    "Ink TUI"
+  ],
+  "projects": [
+    {
+      "title": "chroma-synth",
+      "description": "Modular terminal & WebAudio synthesizer with ASCII oscilloscope visualizations",
+      "link": "https://github.com/soratakahashi/chroma-synth"
+    },
+    {
+      "title": "hyperfluid",
+      "description": "Real-time 3D Navier-Stokes fluid simulation running on WebGPU compute shaders",
+      "link": "https://github.com/soratakahashi/hyperfluid"
+    },
+    {
+      "title": "glyph-raymarcher",
+      "description": "Signed distance field (SDF) 3D raymarcher rendered at 60fps in the terminal",
+      "link": "https://github.com/soratakahashi/glyph-raymarcher"
+    }
+  ],
+  "contact": {
+    "github": "github.com/soratakahashi",
+    "email": "hello@sora.studio",
+    "website": "https://sora.studio",
+    "socials": "@sora_shaders"
+  },
+  "theme": {
+    "accentColor": "magenta",
+    "borderStyle": "round"
+  }
+}

@@ -5,7 +5,9 @@
   "private": true,
   "scripts": {
     "start": "bun run index.tsx",
-    "dev": "bun --watch index.tsx"
+    "dev": "bun --watch index.tsx",
+    "create": "bun run index.tsx create",
+    "init": "bun run index.tsx init"
   },
   "devDependencies": {
     "@types/bun": "latest",

@@ -1,0 +1,43 @@
+{
+  "profile": {
+    "name": "Mira Vance",
+    "role": "Systems & Distributed Storage Engineer",
+    "bio": "Building high-throughput storage engines, eBPF observability tools, and zero-copy networking daemons in Rust and C."
+  },
+  "skills": [
+    "Rust",
+    "C",
+    "Linux Kernel",
+    "eBPF",
+    "io_uring",
+    "Raft Consensus",
+    "Zig"
+  ],
+  "projects": [
+    {
+      "title": "aether-kv",
+      "description": "Log-structured merge-tree key-value store using io_uring for async disk I/O",
+      "link": "https://github.com/miravance/aether-kv"
+    },
+    {
+      "title": "pktscope",
+      "description": "Terminal packet analyzer and eBPF socket latency tracer",
+      "link": "https://github.com/miravance/pktscope"
+    },
+    {
+      "title": "raft-lite",
+      "description": "Deterministic simulation-tested Raft consensus library with zero allocations",
+      "link": "https://github.com/miravance/raft-lite"
+    }
+  ],
+  "contact": {
+    "github": "github.com/miravance",
+    "email": "mira@vance.systems",
+    "website": "https://vance.systems",
+    "socials": "@miravance@fosstodon.org"
+  },
+  "theme": {
+    "accentColor": "green",
+    "borderStyle": "double"
+  }
+}

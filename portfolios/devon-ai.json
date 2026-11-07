@@ -1,0 +1,43 @@
+{
+  "profile": {
+    "name": "Devon K.",
+    "role": "AI Infrastructure & Compiler Engineer",
+    "bio": "Optimizing local LLM inference engines, custom CUDA/Triton kernels, and autonomous developer tooling."
+  },
+  "skills": [
+    "Python",
+    "C++ / CUDA",
+    "Triton",
+    "PyTorch",
+    "MLIR",
+    "Bun",
+    "TypeScript"
+  ],
+  "projects": [
+    {
+      "title": "tensor-pulse",
+      "description": "Lightweight quantized GGUF inference server with speculative decoding",
+      "link": "https://github.com/devonk/tensor-pulse"
+    },
+    {
+      "title": "flash-quant",
+      "description": "Custom 4-bit fused attention kernels in Triton for consumer GPUs",
+      "link": "https://github.com/devonk/flash-quant"
+    },
+    {
+      "title": "bench-tui",
+      "description": "Real-time token/sec & VRAM profiler in the terminal for local models",
+      "link": "https://github.com/devonk/bench-tui"
+    }
+  ],
+  "contact": {
+    "github": "github.com/devonk",
+    "email": "devon@tensorpulse.ai",
+    "website": "https://devonk.ai",
+    "socials": "@devonk_ml"
+  },
+  "theme": {
+    "accentColor": "yellow",
+    "borderStyle": "bold"
+  }
+}

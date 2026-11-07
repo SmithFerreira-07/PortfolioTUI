@@ -1,76 +1,52 @@
 import React, { useState } from "react";
-import { Box, Text, useInput, useApp } from "ink";
+import { loadPortfolioCatalog, type PortfolioEntry } from "./portfolio.ts";
+import { PortfolioPicker, Viewer } from "./Viewer.tsx";
+import BuilderWizard from "./builder/BuilderWizard.tsx";
 
-const tabs = ["about", "projects", "contact"] as const;
-type Tab = (typeof tabs)[number];
+type AppRoute =
+  | { mode: "picker"; catalog: [PortfolioEntry, ...PortfolioEntry[]] }
+  | { mode: "view"; entry: PortfolioEntry }
+  | { mode: "builder" };
 
-export default function App() {
-  const { exit } = useApp();
-  const [activeTab, setActiveTab] = useState<Tab>("about");
+export default function App({
+  initialMode = "view",
+}: {
+  initialMode?: "view" | "builder";
+}) {
+  const [route, setRoute] = useState<AppRoute>(() =>
+    initialMode === "builder"
+      ? { mode: "builder" }
+      : { mode: "picker", catalog: loadPortfolioCatalog() }
+  );
 
-  useInput((input, key) => {
-    if (input === "q") {
-      exit();
-    }
+  if (route.mode === "builder") {
+    return (
+      <BuilderWizard
+        onLaunchPortfolio={() => {
+          const catalog = loadPortfolioCatalog();
+          setRoute({ mode: "view", entry: catalog[0] });
+        }}
+      />
+    );
+  }
 
-    if (key.rightArrow || key.tab) {
-      const next = (tabs.indexOf(activeTab) + 1) % tabs.length;
-      setActiveTab(tabs[next]!);
-    }
-
-    if (key.leftArrow) {
-      const prev = (tabs.indexOf(activeTab) - 1 + tabs.length) % tabs.length;
-      setActiveTab(tabs[prev]!);
-    }
-  });
+  if (route.mode === "picker") {
+    return (
+      <PortfolioPicker
+        catalog={route.catalog}
+        onSelect={(entry) => setRoute({ mode: "view", entry })}
+        onOpenBuilder={() => setRoute({ mode: "builder" })}
+      />
+    );
+  }
 
   return (
-    <Box flexDirection="column" padding={1}>
-      <Box marginBottom={1}>
-        <Text bold color="cyan">
-          portfolio-cli
-        </Text>
-      </Box>
-
-      <Box gap={2} marginBottom={1}>
-        {tabs.map((tab) => (
-          <Text
-            key={tab}
-            color={activeTab === tab ? "green" : "gray"}
-            bold={activeTab === tab}
-            underline={activeTab === tab}
-          >
-            {tab}
-          </Text>
-        ))}
-      </Box>
-
-      <Box borderStyle="single" padding={1} minHeight={8} flexDirection="column">
-        {activeTab === "about" && (
-          <Box flexDirection="column">
-            <Text>hi, i'm kyrie.</Text>
-            <Text color="gray">cs student & developer. wip terminal portfolio.</Text>
-          </Box>
-        )}
-
-        {activeTab === "projects" && (
-          <Box flexDirection="column">
-            <Text>- project 1 (todo)</Text>
-            <Text>- project 2 (todo)</Text>
-          </Box>
-        )}
-
-        {activeTab === "contact" && (
-          <Box flexDirection="column">
-            <Text>github: github.com/...</Text>
-            <Text>email: ...</Text>
-          </Box>
-        )}
-      </Box>
-
-      <Box marginTop={1}>
-        <Text color="gray">use arrow keys to switch tabs, q to quit</Text>
-      </Box>
-    </Box>
+    <Viewer
+      entry={route.entry}
+      onBackToPicker={() =>
+        setRoute({ mode: "picker", catalog: loadPortfolioCatalog() })
+      }
+      onOpenBuilder={() => setRoute({ mode: "builder" })}
+    />
   );
 }
