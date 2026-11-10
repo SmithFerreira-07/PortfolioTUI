@@ -33,13 +33,18 @@ export function Banner({ name, palette, font, maxWidth, animate = MOTION }: {
   return <Text bold={font === "plain"}>{paint.multiline(body)}</Text>;
 }
 
-//step down through [font, "small", "plain"] so the banner never wraps or clips on narrow terminals
-function layout(name: string, font: FontId, maxWidth: number): string[] {
-  for (const candidate of [font, "small", "plain"] as const) {
-    const lines = render(name, candidate);
-    if (Math.max(...lines.map((l) => l.length)) <= maxWidth) return lines;
-  }
-  return [name.slice(0, Math.max(1, maxWidth))];
+//recursively step down through [font, "small", "plain"] so the banner never wraps or clips on narrow terminals
+export function layout(
+  name: string,
+  font: FontId,
+  maxWidth: number,
+  fallbacks: readonly FontId[] = [font, "small", "plain"],
+): string[] {
+  const [candidate, ...rest] = fallbacks;
+  if (!candidate) return [name.slice(0, Math.max(1, maxWidth))];
+  const lines = render(name, candidate);
+  if (Math.max(...lines.map((l) => l.length)) <= maxWidth) return lines;
+  return layout(name, font, maxWidth, rest);
 }
 
 //render a name into trimmed ascii lines using figlet, falling back to plain text if empty or unsupported

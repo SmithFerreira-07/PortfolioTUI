@@ -1,22 +1,38 @@
 import { describe, expect, test } from "bun:test";
-import { mkdtempSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { layout } from "./Banner.tsx";
 import { cycleIndex, windowFor } from "./PortfolioCard.tsx";
-import { EMPTY_PORTFOLIO, normalize, parsePortfolio, prettyUrl, splitSkills, toUrl } from "./schema.ts";
-import { describeFile, loadGallery, readEntry, saveEntry } from "./store.ts";
+import {
+  EMPTY_PORTFOLIO,
+  PortfolioValidationError,
+  normalize,
+  parsePortfolio,
+  prettyUrl,
+  splitSkills,
+  toUrl,
+} from "./schema.ts";
+import { PortfolioStore, describeFile, loadGallery, readEntry, saveEntry } from "./store.ts";
 
 describe("parsePortfolio boundary validation", () => {
-  test("loads all built-in gallery portfolios without error", () => {
-    const gallery = loadGallery();
+  test("loads all built-in gallery portfolios without error", async () => {
+    const gallery = await loadGallery();
     expect(gallery.errors).toEqual([]);
     expect(gallery.entries.length).toBeGreaterThanOrEqual(6);
   });
 
-  test("rejects non-objects and missing names", () => {
+  test("rejects non-objects and missing names with PortfolioValidationError", () => {
     expect(() => parsePortfolio(null)).toThrow("portfolio must be a JSON object");
     expect(() => parsePortfolio([])).toThrow("portfolio must be a JSON object");
     expect(() => parsePortfolio({ name: "   " })).toThrow('missing "name"');
+
+    try {
+      parsePortfolio({ name: "   " });
+    } catch (err) {
+      expect(err).toBeInstanceOf(PortfolioValidationError);
+      expect((err as PortfolioValidationError).field).toBe("name");
+    }
   });
 
   test("rejects unknown palettes, fonts, and malformed items", () => {
@@ -94,18 +110,50 @@ describe("viewport windowing and index cycling", () => {
   });
 });
 
-describe("store persistence", () => {
-  test("saves, reloads, and describes external files accurately", () => {
+describe("store persistence, recursion, and PortfolioStore class", () => {
+  test("saves, reloads, and describes external files accurately", async () => {
     const dir = mkdtempSync(join(tmpdir(), "portfolio-tui-"));
     try {
       const target = join(dir, "custom.json");
-      const saved = saveEntry({ ...EMPTY_PORTFOLIO, name: "Ada Lovelace" }, target);
-      const loaded = readEntry(saved.file);
+      const saved = await saveEntry({ ...EMPTY_PORTFOLIO, name: "Ada Lovelace" }, target);
+      const loaded = await readEntry(saved.file);
       expect(loaded.data.name).toBe("Ada Lovelace");
       expect(describeFile(saved.file).path).not.toStartWith("portfolios/");
-      expect(() => saveEntry(EMPTY_PORTFOLIO, target)).toThrow('missing "name"');
+      expect(saveEntry(EMPTY_PORTFOLIO, target)).rejects.toThrow('missing "name"');
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }
+  });
+
+  test("recursively discovers nested portfolios and resolves filename collisions", async () => {
+    const dir = mkdtempSync(join(tmpdir(), "portfolio-tui-store-"));
+    try {
+      const store = new PortfolioStore(dir);
+      const first = await store.saveEntry({ ...EMPTY_PORTFOLIO, name: "Grace Hopper" });
+      const second = await store.saveEntry({ ...EMPTY_PORTFOLIO, name: "Grace Hopper" });
+      expect(first.file).toEndWith("grace-hopper.json");
+      expect(second.file).toEndWith("grace-hopper-2.json");
+
+      const nestedDir = join(dir, "featured", "systems");
+      mkdirSync(nestedDir, { recursive: true });
+      await store.saveEntry({ ...EMPTY_PORTFOLIO, name: "Margaret Hamilton" }, join(nestedDir, "margaret.json"));
+
+      const gallery = await store.loadGallery();
+      expect(gallery.errors).toEqual([]);
+      expect(gallery.entries.map((e) => e.data.name)).toEqual([
+        "Grace Hopper",
+        "Grace Hopper",
+        "Margaret Hamilton",
+      ]);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test("recursively steps down banner fonts to fit narrow widths", () => {
+    const narrow = layout("Ada Lovelace", "standard", 12);
+    expect(narrow).toEqual(["Ada Lovelace"]);
+    const clipped = layout("Ada Lovelace", "standard", 3);
+    expect(clipped).toEqual(["Ada"]);
   });
 });

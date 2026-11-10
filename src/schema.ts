@@ -55,6 +55,17 @@ export const EMPTY_PORTFOLIO: Portfolio = {
   theme: { palette: "ocean", font: "small" },
 };
 
+//structured error class thrown when a portfolio json file fails schema validation
+export class PortfolioValidationError extends Error {
+  readonly field: string;
+
+  constructor(field: string, message: string) {
+    super(message);
+    this.name = "PortfolioValidationError";
+    this.field = field;
+  }
+}
+
 //look up the primary accent hex color for a portfolio's chosen palette
 export function accentOf(p: Portfolio): string {
   return PALETTES[p.theme.palette].accent;
@@ -62,30 +73,34 @@ export function accentOf(p: Portfolio): string {
 
 //strictly validate untrusted json at the disk-read boundary so hand-edited files get clear error messages
 export function parsePortfolio(raw: unknown): Portfolio {
-  if (!isRecord(raw)) throw new Error("portfolio must be a JSON object");
+  if (!isRecord(raw)) throw new PortfolioValidationError("root", "portfolio must be a JSON object");
   const name = cleanText(raw.name);
-  if (!name) throw new Error('missing "name"');
+  if (!name) throw new PortfolioValidationError("name", 'missing "name"');
 
   if (raw.skills !== undefined && !Array.isArray(raw.skills)) {
-    throw new Error('"skills" must be an array');
+    throw new PortfolioValidationError("skills", '"skills" must be an array');
   }
   if (raw.projects !== undefined && !Array.isArray(raw.projects)) {
-    throw new Error('"projects" must be an array');
+    throw new PortfolioValidationError("projects", '"projects" must be an array');
   }
   if (raw.links !== undefined && !Array.isArray(raw.links)) {
-    throw new Error('"links" must be an array');
+    throw new PortfolioValidationError("links", '"links" must be an array');
   }
   if (raw.theme !== undefined && !isRecord(raw.theme)) {
-    throw new Error('"theme" must be an object');
+    throw new PortfolioValidationError("theme", '"theme" must be an object');
   }
 
   const theme = isRecord(raw.theme) ? raw.theme : {};
   const projects = (raw.projects ?? []).map((p, i) => {
-    if (!isRecord(p) || !cleanText(p.title)) throw new Error(`project #${i + 1} is missing "title"`);
+    if (!isRecord(p) || !cleanText(p.title)) {
+      throw new PortfolioValidationError(`projects[${i}].title`, `project #${i + 1} is missing "title"`);
+    }
     return { title: cleanText(p.title), description: cleanText(p.description), link: cleanText(p.link) };
   });
   const links = (raw.links ?? []).map((l, i) => {
-    if (!isRecord(l) || !cleanText(l.url)) throw new Error(`link #${i + 1} is missing "url"`);
+    if (!isRecord(l) || !cleanText(l.url)) {
+      throw new PortfolioValidationError(`links[${i}].url`, `link #${i + 1} is missing "url"`);
+    }
     return { label: cleanText(l.label), url: cleanText(l.url) };
   });
 
@@ -163,5 +178,5 @@ function isRecord(v: unknown): v is Record<string, unknown> {
 function parseOption<T extends string>(v: unknown, options: readonly T[], fallback: T, field: string): T {
   if (v === undefined) return fallback;
   if (typeof v === "string" && options.includes(v as T)) return v as T;
-  throw new Error(`invalid ${field} "${String(v)}" (expected ${options.join(", ")})`);
+  throw new PortfolioValidationError(field, `invalid ${field} "${String(v)}" (expected ${options.join(", ")})`);
 }

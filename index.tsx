@@ -3,7 +3,7 @@
 import React from "react";
 import { render } from "ink";
 import App, { type Route } from "./src/App.tsx";
-import { findEntry } from "./src/store.ts";
+import { findEntry, loadGallery } from "./src/store.ts";
 
 const HELP = `Terminal portfolios
 
@@ -21,20 +21,22 @@ if (args[0] === "--help" || args[0] === "-h" || args[0] === "help") {
 }
 if (args[0]?.startsWith("-")) fail(`Unknown option "${args[0]}". Run \`bun start --help\` for usage.`);
 if (!process.stdin.isTTY) fail("This is an interactive app. Run it in a terminal.");
-render(<App initial={resolveRoute(args)} />);
+render(<App initial={await resolveRoute(args)} />);
 
-//map cli positional arguments to the initial screen route
-function resolveRoute([command, arg]: string[]): Route | undefined {
-  if (!command) return undefined;
+//asynchronously map cli positional arguments to the initial screen route
+async function resolveRoute([command, arg]: string[]): Promise<Route> {
+  if (!command) return { screen: "gallery", gallery: await loadGallery() };
   if (command === "new" || command === "create") return { screen: "wizard" };
-  if (command === "edit") return arg ? { screen: "wizard", entry: find(arg) } : fail("Usage: bun start edit <name>");
-  return { screen: "view", entry: find(command), standalone: true };
+  if (command === "edit") {
+    return arg ? { screen: "wizard", entry: await find(arg) } : fail("Usage: bun start edit <name>");
+  }
+  return { screen: "view", entry: await find(command), standalone: true };
 }
 
-//resolve a portfolio query at the cli boundary or exit if missing/invalid
-function find(query: string) {
+//asynchronously resolve a portfolio query at the cli boundary or exit if missing/invalid
+async function find(query: string) {
   try {
-    return findEntry(query) ?? fail(`No portfolio called "${query}". Run \`bun start\` to see them all.`);
+    return (await findEntry(query)) ?? fail(`No portfolio called "${query}". Run \`bun start\` to see them all.`);
   } catch (err) {
     fail(`Couldn't read ${query}: ${err instanceof Error ? err.message : err}`);
   }

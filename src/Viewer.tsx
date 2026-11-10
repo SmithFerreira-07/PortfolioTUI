@@ -1,5 +1,5 @@
-//single-portfolio screen: pairs portfoliocard with os browser/clipboard actions and only advertises "open" for valid urls
-import { spawnSync } from "node:child_process";
+//single-portfolio screen: pairs portfoliocard with async os browser/clipboard actions and only advertises "open" for valid urls
+import { spawn } from "node:child_process";
 import React from "react";
 import { Box, useApp, useInput } from "ink";
 import { KeyHints, useFlash, type Hint } from "./KeyHints.tsx";
@@ -22,10 +22,13 @@ export function Viewer({ data, onBack, onEdit }: {
     if (key.escape) return onBack ? onBack() : exit();
     if (input === "e" && onEdit) return onEdit();
     if ((key.return || input === "o") && url) {
-      return flash(openUrl(url) ? `Opened ${prettyUrl(url)}` : `Can't open ${card.target}`);
+      const target = card.target;
+      void openUrl(url).then((ok) => flash(ok ? `Opened ${prettyUrl(url)}` : `Can't open ${target}`));
+      return;
     }
     if (input === "y" && card.target) {
-      return flash(copyText(card.target) ? "Copied" : "Couldn't copy");
+      void copyText(card.target).then((ok) => flash(ok ? "Copied" : "Couldn't copy"));
+      return;
     }
   });
 
@@ -44,24 +47,32 @@ export function Viewer({ data, onBack, onEdit }: {
   );
 }
 
-//open a validated url in the os default browser
-function openUrl(url: string): boolean {
+//asynchronously open a validated url in the os default browser
+async function openUrl(url: string): Promise<boolean> {
   if (process.platform === "darwin") return run("open", [url]);
   if (process.platform === "win32") return run("rundll32", ["url.dll,FileProtocolHandler", url]);
   return run("xdg-open", [url]);
 }
 
-//copy text via native os clipboard utilities, falling back to osc-52 for ssh/headless sessions
-function copyText(value: string): boolean {
+//asynchronously copy text via native os clipboard utilities, falling back to osc-52 for ssh/headless sessions
+async function copyText(value: string): Promise<boolean> {
   const ok =
-    process.platform === "darwin" ? run("pbcopy", [], value)
-    : process.platform === "win32" ? run("clip", [], value)
-    : run("wl-copy", [], value) || run("xclip", ["-selection", "clipboard"], value);
+    process.platform === "darwin" ? await run("pbcopy", [], value)
+    : process.platform === "win32" ? await run("clip", [], value)
+    : (await run("wl-copy", [], value)) || (await run("xclip", ["-selection", "clipboard"], value));
   if (!ok) process.stdout.write(`\x1b]52;c;${Buffer.from(value).toString("base64")}\x07`);
   return true;
 }
 
-//spawn a child command synchronously with muted output and return whether it succeeded
-function run(cmd: string, args: string[], input?: string): boolean {
-  return spawnSync(cmd, args, { input, stdio: [input ? "pipe" : "ignore", "ignore", "ignore"] }).status === 0;
+//spawn a child command asynchronously with muted output and resolve whether it succeeded
+function run(cmd: string, args: string[], input?: string): Promise<boolean> {
+  return new Promise((resolve) => {
+    const child = spawn(cmd, args, { stdio: [input ? "pipe" : "ignore", "ignore", "ignore"] });
+    child.on("error", () => resolve(false));
+    child.on("close", (code) => resolve(code === 0));
+    if (input && child.stdin) {
+      child.stdin.write(input);
+      child.stdin.end();
+    }
+  });
 }

@@ -72,10 +72,10 @@ export function Wizard({ entry, onView, onClose }: {
     setLeaveWarning("Unsaved changes. Press esc again to discard them.");
   };
 
-  //persist the normalized draft to disk and transition to the saved screen
-  const save = () => {
+  //asynchronously persist the normalized draft to disk and transition to the saved screen
+  const save = async () => {
     try {
-      setSaved(saveEntry(draft, entry?.file));
+      setSaved(await saveEntry(draft, entry?.file));
     } catch (err) {
       setSaveError(err instanceof Error ? err.message : String(err));
     }
