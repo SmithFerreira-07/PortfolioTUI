@@ -1,239 +1,67 @@
-import React, { useState } from "react";
-import { Box, Text, useInput, useApp } from "ink";
-import { cycle } from "./builder/FormControls.tsx";
-import type { PortfolioEntry } from "./portfolio.ts";
+//single-portfolio screen: pairs portfoliocard with os browser/clipboard actions and only advertises "open" for valid urls
+import { spawnSync } from "node:child_process";
+import React from "react";
+import { Box, useApp, useInput } from "ink";
+import { KeyHints, useFlash, type Hint } from "./KeyHints.tsx";
+import { PortfolioCard, useCardState } from "./PortfolioCard.tsx";
+import { accentOf, prettyUrl, toUrl, type Portfolio } from "./schema.ts";
 
-const TABS = ["about", "skills", "projects", "contact"] as const;
-type Tab = (typeof TABS)[number];
-
-export function PortfolioPicker({
-  catalog,
-  onSelect,
-  onOpenBuilder,
-}: {
-  catalog: [PortfolioEntry, ...PortfolioEntry[]];
-  onSelect: (entry: PortfolioEntry) => void;
-  onOpenBuilder: () => void;
+//render the interactive portfolio viewer with open, copy, edit, and back/quit bindings
+export function Viewer({ data, onBack, onEdit }: {
+  data: Portfolio;
+  onBack?: () => void;
+  onEdit?: () => void;
 }) {
   const { exit } = useApp();
-  const [selectedId, setSelectedId] = useState<string>(catalog[0].id);
-
-  const current =
-    catalog.find((item) => item.id === selectedId) ?? catalog[0];
-  const { accentColor, borderStyle } = current.data.theme;
+  const card = useCardState(data);
+  const [status, flash] = useFlash();
+  const url = card.target ? toUrl(card.target) : null;
 
   useInput((input, key) => {
-    if (input === "q" || key.escape) return exit();
-    if (input === "c" || input === "e") return onOpenBuilder();
-    if (key.upArrow || key.leftArrow) {
-      setSelectedId(cycle(catalog, current, -1).id);
-      return;
+    if (input === "q") return exit();
+    if (key.escape) return onBack ? onBack() : exit();
+    if (input === "e" && onEdit) return onEdit();
+    if ((key.return || input === "o") && url) {
+      return flash(openUrl(url) ? `Opened ${prettyUrl(url)}` : `Can't open ${card.target}`);
     }
-    if (key.downArrow || key.rightArrow || key.tab) {
-      setSelectedId(cycle(catalog, current, 1).id);
-      return;
-    }
-    if (key.return) {
-      onSelect(current);
+    if (input === "y" && card.target) {
+      return flash(copyText(card.target) ? "Copied" : "Couldn't copy");
     }
   });
 
+  const hints: Hint[] = [["tab", "section"]];
+  if (card.selected !== null) hints.push(["↑↓", "select"]);
+  if (url) hints.push(["o", "open"]);
+  if (card.target) hints.push(["y", "copy"]);
+  if (onEdit) hints.push(["e", "edit"]);
+  hints.push(onBack ? ["esc", "back"] : ["q", "quit"]);
+
   return (
-    <Box flexDirection="column" padding={1}>
-      <Box marginBottom={1} justifyContent="space-between">
-        <Text bold color={accentColor}>
-          ✦ portfolio-cli — Select a Portfolio
-        </Text>
-        <Text color="gray">{catalog.length} portfolios available</Text>
-      </Box>
-
-      <Box flexDirection="column" marginBottom={1}>
-        {catalog.map((entry) => {
-          const isSelected = entry.id === current.id;
-          const entryAccent = entry.data.theme.accentColor;
-          return (
-            <Box key={entry.id} gap={1}>
-              <Text
-                bold={isSelected}
-                color={isSelected ? entryAccent : "white"}
-              >
-                {isSelected ? "▸" : " "} {entry.data.profile.name}
-              </Text>
-              <Text color="gray">— {entry.data.profile.role}</Text>
-              <Text color={entryAccent}>
-                [{entryAccent} / {entry.data.theme.borderStyle}]
-              </Text>
-              {entry.isUserCustom && (
-                <Text color="cyan" bold>
-                  ★ custom
-                </Text>
-              )}
-            </Box>
-          );
-        })}
-      </Box>
-
-      {/* Live Preview Card for Highlighted Portfolio */}
-      <Box
-        borderStyle={borderStyle}
-        borderColor={accentColor}
-        padding={1}
-        flexDirection="column"
-      >
-        <Box justifyContent="space-between">
-          <Text bold color={accentColor}>
-            {current.data.profile.name} ({current.fileName})
-          </Text>
-          <Text color="gray">
-            theme: {accentColor} • border: {borderStyle}
-          </Text>
-        </Box>
-        <Text color="gray">{current.data.profile.role}</Text>
-        <Box marginTop={1}>
-          <Text>{current.data.profile.bio}</Text>
-        </Box>
-        <Box marginTop={1} gap={1} flexWrap="wrap">
-          {current.data.skills.slice(0, 5).map((s) => (
-            <Text key={s} color={accentColor}>
-              [{s}]
-            </Text>
-          ))}
-        </Box>
-      </Box>
-
-      <Box marginTop={1}>
-        <Text color="gray">
-          ↑/↓: Choose portfolio • Enter: Open TUI • c: Create/Edit custom • q:
-          Quit
-        </Text>
-      </Box>
+    <Box flexDirection="column">
+      <PortfolioCard data={data} {...card} />
+      <KeyHints hints={hints} status={status} accent={accentOf(data)} />
     </Box>
   );
 }
 
-export function Viewer({
-  entry,
-  onBackToPicker,
-  onOpenBuilder,
-}: {
-  entry: PortfolioEntry;
-  onBackToPicker: () => void;
-  onOpenBuilder: () => void;
-}) {
-  const { exit } = useApp();
-  const [activeTab, setActiveTab] = useState<Tab>("about");
-  const { data } = entry;
-  const { accentColor, borderStyle } = data.theme;
+//open a validated url in the os default browser
+function openUrl(url: string): boolean {
+  if (process.platform === "darwin") return run("open", [url]);
+  if (process.platform === "win32") return run("rundll32", ["url.dll,FileProtocolHandler", url]);
+  return run("xdg-open", [url]);
+}
 
-  useInput((input, key) => {
-    if (input === "q") return exit();
-    if (input === "b" || key.escape) return onBackToPicker();
-    if (input === "e" || input === "c") return onOpenBuilder();
-    if (key.rightArrow || key.tab) setActiveTab((t) => cycle(TABS, t, 1));
-    if (key.leftArrow) setActiveTab((t) => cycle(TABS, t, -1));
-  });
+//copy text via native os clipboard utilities, falling back to osc-52 for ssh/headless sessions
+function copyText(value: string): boolean {
+  const ok =
+    process.platform === "darwin" ? run("pbcopy", [], value)
+    : process.platform === "win32" ? run("clip", [], value)
+    : run("wl-copy", [], value) || run("xclip", ["-selection", "clipboard"], value);
+  if (!ok) process.stdout.write(`\x1b]52;c;${Buffer.from(value).toString("base64")}\x07`);
+  return true;
+}
 
-  const contactRows = (
-    Object.entries(data.contact) as [string, string][]
-  ).filter(([, value]) => value.length > 0);
-
-  return (
-    <Box flexDirection="column" padding={1}>
-      <Box marginBottom={1} justifyContent="space-between">
-        <Text bold color={accentColor}>
-          {data.profile.name} — portfolio-cli
-        </Text>
-        <Text color="gray">
-          theme: <Text color={accentColor}>{accentColor}</Text> ({borderStyle})
-        </Text>
-      </Box>
-
-      <Box gap={2} marginBottom={1}>
-        {TABS.map((tab) => (
-          <Text
-            key={tab}
-            color={activeTab === tab ? accentColor : "gray"}
-            bold={activeTab === tab}
-            underline={activeTab === tab}
-          >
-            {tab}
-          </Text>
-        ))}
-      </Box>
-
-      <Box
-        borderStyle={borderStyle}
-        borderColor={accentColor}
-        padding={1}
-        minHeight={8}
-        flexDirection="column"
-      >
-        {activeTab === "about" && (
-          <Box flexDirection="column" gap={1}>
-            <Box flexDirection="column">
-              <Text bold color={accentColor}>
-                hi, i'm {data.profile.name}.
-              </Text>
-              <Text color="gray">{data.profile.role}</Text>
-            </Box>
-            <Text>{data.profile.bio}</Text>
-          </Box>
-        )}
-
-        {activeTab === "skills" && (
-          <Box flexDirection="column" gap={1}>
-            <Text bold color={accentColor}>
-              Skills & Tech Stack
-            </Text>
-            <Box flexWrap="wrap" gap={1}>
-              {data.skills.map((skill, idx) => (
-                <Text key={`${skill}-${idx}`} color={accentColor}>
-                  • {skill}
-                </Text>
-              ))}
-            </Box>
-          </Box>
-        )}
-
-        {activeTab === "projects" && (
-          <Box flexDirection="column" gap={1}>
-            {data.projects.map((proj, idx) => (
-              <Box key={`${proj.title}-${idx}`} flexDirection="column">
-                <Text bold color={accentColor}>
-                  ▸ {proj.title}
-                </Text>
-                <Text>  {proj.description}</Text>
-                {proj.link ? (
-                  <Text color="gray">  ↳ {proj.link}</Text>
-                ) : null}
-              </Box>
-            ))}
-          </Box>
-        )}
-
-        {activeTab === "contact" && (
-          <Box flexDirection="column">
-            {contactRows.length === 0 ? (
-              <Text color="gray">No contact links configured.</Text>
-            ) : (
-              contactRows.map(([label, value]) => (
-                <Text key={label}>
-                  <Text bold color={accentColor}>
-                    {label}:{" "}
-                  </Text>
-                  {value}
-                </Text>
-              ))
-            )}
-          </Box>
-        )}
-      </Box>
-
-      <Box marginTop={1}>
-        <Text color="gray">
-          ←/→: switch tabs • b/Esc: switch portfolio • c: create/edit • q: quit
-        </Text>
-      </Box>
-    </Box>
-  );
+//spawn a child command synchronously with muted output and return whether it succeeded
+function run(cmd: string, args: string[], input?: string): boolean {
+  return spawnSync(cmd, args, { input, stdio: [input ? "pipe" : "ignore", "ignore", "ignore"] }).status === 0;
 }

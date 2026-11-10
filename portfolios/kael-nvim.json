@@ -1,0 +1,52 @@
+{
+  "name": "Kaelen R.",
+  "role": "Generative Systems & Spatial Graph Designer",
+  "bio": "Mapping distributed knowledge graphs, procedural starfields, and sub-millisecond protocol engines in Rust and Zig.",
+  "skills": [
+    "Rust",
+    "Zig",
+    "Graph Engines",
+    "WebAssembly",
+    "Tree-sitter",
+    "Terminal UI"
+  ],
+  "projects": [
+    {
+      "title": "astra-mesh",
+      "description": "Zero-allocation 2D/3D force-directed graph layout engine for terminal & WebGL",
+      "link": "https://github.com/kaelenr/astra-mesh"
+    },
+    {
+      "title": "glyph-lsp",
+      "description": "Zero-config markdown and diagram language server written in Rust",
+      "link": "https://github.com/kaelenr/glyph-lsp"
+    },
+    {
+      "title": "nebula-sync",
+      "description": "CRDT peer-to-peer state replication over QUIC streams",
+      "link": "https://github.com/kaelenr/nebula-sync"
+    }
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/kaelenr"
+    },
+    {
+      "label": "Website",
+      "url": "https://astra.dev"
+    },
+    {
+      "label": "Email",
+      "url": "kael@astra.dev"
+    },
+    {
+      "label": "Social",
+      "url": "@kael_graphs"
+    }
+  ],
+  "theme": {
+    "palette": "grape",
+    "font": "calvin"
+  }
+}

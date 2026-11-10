@@ -1,0 +1,47 @@
+{
+  "name": "Zeke Moreno",
+  "role": "Minimalist Craft & Functional Systems Architect",
+  "bio": "Cultivating resilient, calm software ecosystems, deterministic Nix environments, and organic procedural tools.",
+  "skills": [
+    "Go",
+    "Nix / NixOS",
+    "Haskell",
+    "OCaml",
+    "TypeScript",
+    "Linux"
+  ],
+  "projects": [
+    {
+      "title": "komorebi-sh",
+      "description": "Mindful terminal session manager and procedural ambient timer",
+      "link": "https://github.com/zekemoreno/komorebi-sh"
+    },
+    {
+      "title": "nix-bonsai",
+      "description": "Declarative reproducible developer environments with zero-drift pruning",
+      "link": "https://github.com/zekemoreno/nix-bonsai"
+    }
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/zekemoreno"
+    },
+    {
+      "label": "Website",
+      "url": "https://komorebi.sh"
+    },
+    {
+      "label": "Email",
+      "url": "zeke@komorebi.sh"
+    },
+    {
+      "label": "Social",
+      "url": "@zeke_zen"
+    }
+  ],
+  "theme": {
+    "palette": "forest",
+    "font": "standard"
+  }
+}

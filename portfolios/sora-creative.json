@@ -1,9 +1,7 @@
 {
-  "profile": {
-    "name": "Sora Takahashi",
-    "role": "Creative Technologist & Shader Artist",
-    "bio": "Exploring the intersection of real-time graphics, generative audio-visual instruments, and expressive terminal interfaces."
-  },
+  "name": "Sora",
+  "role": "Creative Technologist & Shader Artist",
+  "bio": "Exploring the intersection of real-time graphics, generative audio-visual instruments, and expressive terminal interfaces.",
   "skills": [
     "TypeScript",
     "WebGPU",
@@ -30,14 +28,26 @@
       "link": "https://github.com/soratakahashi/glyph-raymarcher"
     }
   ],
-  "contact": {
-    "github": "github.com/soratakahashi",
-    "email": "hello@sora.studio",
-    "website": "https://sora.studio",
-    "socials": "@sora_shaders"
-  },
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/soratakahashi"
+    },
+    {
+      "label": "Website",
+      "url": "https://sora.studio"
+    },
+    {
+      "label": "Email",
+      "url": "hello@sora.studio"
+    },
+    {
+      "label": "Social",
+      "url": "@sora_shaders"
+    }
+  ],
   "theme": {
-    "accentColor": "magenta",
-    "borderStyle": "round"
+    "palette": "sunset",
+    "font": "shadow"
   }
 }

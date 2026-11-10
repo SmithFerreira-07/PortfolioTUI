@@ -1,23 +1,32 @@
 {
-  "name": "portfolio-cli",
-  "module": "index.tsx",
+  "name": "portfolio-tui",
   "type": "module",
   "private": true,
   "scripts": {
     "start": "bun run index.tsx",
     "dev": "bun --watch index.tsx",
-    "create": "bun run index.tsx create",
-    "init": "bun run index.tsx init"
+    "new": "bun run index.tsx new",
+    "test": "bun test",
+    "typecheck": "tsc --noEmit"
   },
   "devDependencies": {
     "@types/bun": "latest",
-    "@types/react": "^19.3.0"
-  },
-  "peerDependencies": {
+    "@types/react": "^19.3.0",
     "typescript": "^7"
   },
   "dependencies": {
+    "figlet": "^1.12.0",
+    "gradient-string": "^3.0.0",
     "ink": "^8.0.0",
-    "react": "^19.3.1"
-  }
+    "react": "^19.3.1",
+    "strip-ansi": "^7.2.0"
+  },
+  "bin": {
+    "portfolio-tui": "./index.tsx"
+  },
+  "files": [
+    "index.tsx",
+    "src",
+    "portfolios"
+  ]
 }

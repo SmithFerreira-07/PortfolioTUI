@@ -1,0 +1,52 @@
+{
+  "name": "Lyra Vex",
+  "role": "Game Engine Architect & Narrative Systems Dev",
+  "bio": "Designing ECS game engines, procedural deckbuilding mechanics, and custom bytecode virtual machines.",
+  "skills": [
+    "C++20",
+    "Rust / Bevy",
+    "LuaJIT",
+    "Vulkan",
+    "ECS Architecture",
+    "Procedural Gen"
+  ],
+  "projects": [
+    {
+      "title": "arcana-vm",
+      "description": "Register-based bytecode VM for deterministic card-effect resolution",
+      "link": "https://github.com/lyravex/arcana-vm"
+    },
+    {
+      "title": "grimoire-ecs",
+      "description": "Cache-friendly sparse-set Entity Component System in 2,000 lines of Rust",
+      "link": "https://github.com/lyravex/grimoire-ecs"
+    },
+    {
+      "title": "hex-forge",
+      "description": "Procedural world & dungeon map generator with wave-function collapse",
+      "link": "https://github.com/lyravex/hex-forge"
+    }
+  ],
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/lyravex"
+    },
+    {
+      "label": "Website",
+      "url": "https://arcanavm.dev"
+    },
+    {
+      "label": "Email",
+      "url": "lyra@arcanavm.dev"
+    },
+    {
+      "label": "Social",
+      "url": "@lyra_ecs"
+    }
+  ],
+  "theme": {
+    "palette": "ember",
+    "font": "standard"
+  }
+}

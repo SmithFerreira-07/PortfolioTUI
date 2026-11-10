@@ -1,9 +1,7 @@
 {
-  "profile": {
-    "name": "Mira Vance",
-    "role": "Systems & Distributed Storage Engineer",
-    "bio": "Building high-throughput storage engines, eBPF observability tools, and zero-copy networking daemons in Rust and C."
-  },
+  "name": "Mira Vance",
+  "role": "Systems & Distributed Storage Engineer",
+  "bio": "Building high-throughput storage engines, eBPF observability tools, and zero-copy networking daemons in Rust and C.",
   "skills": [
     "Rust",
     "C",
@@ -30,14 +28,26 @@
       "link": "https://github.com/miravance/raft-lite"
     }
   ],
-  "contact": {
-    "github": "github.com/miravance",
-    "email": "mira@vance.systems",
-    "website": "https://vance.systems",
-    "socials": "@miravance@fosstodon.org"
-  },
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/miravance"
+    },
+    {
+      "label": "Website",
+      "url": "https://vance.systems"
+    },
+    {
+      "label": "Email",
+      "url": "mira@vance.systems"
+    },
+    {
+      "label": "Social",
+      "url": "@miravance@fosstodon.org"
+    }
+  ],
   "theme": {
-    "accentColor": "green",
-    "borderStyle": "double"
+    "palette": "mono",
+    "font": "slant"
   }
 }

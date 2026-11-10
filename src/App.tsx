@@ -1,52 +1,56 @@
+//top-level screen router: keeps screens flat at src/ and isolates multi-file editor internals in src/wizard/
 import React, { useState } from "react";
-import { loadPortfolioCatalog, type PortfolioEntry } from "./portfolio.ts";
-import { PortfolioPicker, Viewer } from "./Viewer.tsx";
-import BuilderWizard from "./builder/BuilderWizard.tsx";
+import { Gallery } from "./Gallery.tsx";
+import { loadGallery, type Entry, type Gallery as GalleryData } from "./store.ts";
+import { Viewer } from "./Viewer.tsx";
+import { Wizard } from "./wizard/Wizard.tsx";
 
-type AppRoute =
-  | { mode: "picker"; catalog: [PortfolioEntry, ...PortfolioEntry[]] }
-  | { mode: "view"; entry: PortfolioEntry }
-  | { mode: "builder" };
+//discriminated union of app screens; tracks returntoview and standalone so canceling an edit returns to where you started
+export type Route =
+  | { screen: "gallery"; gallery: GalleryData }
+  | { screen: "view"; entry: Entry; standalone?: boolean }
+  | { screen: "wizard"; entry?: Entry; returnToView?: boolean; standalone?: boolean };
 
-export default function App({
-  initialMode = "view",
-}: {
-  initialMode?: "view" | "builder";
-}) {
-  const [route, setRoute] = useState<AppRoute>(() =>
-    initialMode === "builder"
-      ? { mode: "builder" }
-      : { mode: "picker", catalog: loadPortfolioCatalog() }
-  );
+//root state machine switching between gallery, viewer, and wizard screens
+export default function App({ initial }: { initial?: Route }) {
+  const [route, setRoute] = useState<Route>(() => initial ?? openGallery());
+  const toGallery = () => setRoute(openGallery());
 
-  if (route.mode === "builder") {
-    return (
-      <BuilderWizard
-        onLaunchPortfolio={() => {
-          const catalog = loadPortfolioCatalog();
-          setRoute({ mode: "view", entry: catalog[0] });
-        }}
-      />
-    );
+  switch (route.screen) {
+    case "gallery":
+      return (
+        <Gallery
+          gallery={route.gallery}
+          onView={(entry) => setRoute({ screen: "view", entry })}
+          onEdit={(entry) => setRoute({ screen: "wizard", entry })}
+          onCreate={() => setRoute({ screen: "wizard" })}
+        />
+      );
+    case "view":
+      return (
+        <Viewer
+          key={route.entry.file}
+          data={route.entry.data}
+          onEdit={() => setRoute({ screen: "wizard", entry: route.entry, returnToView: true, standalone: route.standalone })}
+          onBack={route.standalone ? undefined : toGallery}
+        />
+      );
+    case "wizard":
+      return (
+        <Wizard
+          entry={route.entry}
+          onView={(saved) => setRoute({ screen: "view", entry: saved, standalone: route.standalone })}
+          onClose={() =>
+            route.returnToView && route.entry
+              ? setRoute({ screen: "view", entry: route.entry, standalone: route.standalone })
+              : toGallery()
+          }
+        />
+      );
   }
+}
 
-  if (route.mode === "picker") {
-    return (
-      <PortfolioPicker
-        catalog={route.catalog}
-        onSelect={(entry) => setRoute({ mode: "view", entry })}
-        onOpenBuilder={() => setRoute({ mode: "builder" })}
-      />
-    );
-  }
-
-  return (
-    <Viewer
-      entry={route.entry}
-      onBackToPicker={() =>
-        setRoute({ mode: "picker", catalog: loadPortfolioCatalog() })
-      }
-      onOpenBuilder={() => setRoute({ mode: "builder" })}
-    />
-  );
+//reload portfolios from disk whenever entering the gallery screen so newly saved files appear immediately
+function openGallery(): Route {
+  return { screen: "gallery", gallery: loadGallery() };
 }

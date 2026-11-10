@@ -1,9 +1,7 @@
 {
-  "profile": {
-    "name": "Devon K.",
-    "role": "AI Infrastructure & Compiler Engineer",
-    "bio": "Optimizing local LLM inference engines, custom CUDA/Triton kernels, and autonomous developer tooling."
-  },
+  "name": "Devon K.",
+  "role": "AI Infrastructure & Compiler Engineer",
+  "bio": "Optimizing local LLM inference engines, custom CUDA/Triton kernels, and autonomous terminal coding agents.",
   "skills": [
     "Python",
     "C++ / CUDA",
@@ -30,14 +28,26 @@
       "link": "https://github.com/devonk/bench-tui"
     }
   ],
-  "contact": {
-    "github": "github.com/devonk",
-    "email": "devon@tensorpulse.ai",
-    "website": "https://devonk.ai",
-    "socials": "@devonk_ml"
-  },
+  "links": [
+    {
+      "label": "GitHub",
+      "url": "github.com/devonk"
+    },
+    {
+      "label": "Website",
+      "url": "https://devonk.ai"
+    },
+    {
+      "label": "Email",
+      "url": "devon@tensorpulse.ai"
+    },
+    {
+      "label": "Social",
+      "url": "@devonk_ml"
+    }
+  ],
   "theme": {
-    "accentColor": "yellow",
-    "borderStyle": "bold"
+    "palette": "ocean",
+    "font": "small"
   }
 }
