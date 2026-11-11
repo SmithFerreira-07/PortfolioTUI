@@ -2,7 +2,7 @@
 
 This is a portfolio TUI tool for generation of cool and aesthetic quick calling card type of portfolio, it uses types to avoid illegal states and bugs in the software.
 
-[Software Demo Video](http://youtube.link.goes.here)
+[Software Demo Video] On rubric
 
 # Development Environment
 
